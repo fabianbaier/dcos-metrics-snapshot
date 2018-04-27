@@ -13,6 +13,10 @@ import (
 	"github.com/fabianbaier/dcos-metrics-snapshot/discovery"
 )
 
+type MesosResponse struct {
+	Response []interface{}
+}
+
 type Crawler struct {
 	agentList      discovery.AgentList
 	cfg        *config.Config
@@ -58,9 +62,53 @@ func (m *metricCrawler) crawl() {
 }
 
 func (m *metricCrawler) fetchAgent() error {
-	for _, hostname := range m.c.agentList.AgentList {
-		go m.fetchContainerMetrics(hostname)
+	if m.c.cfg.EnvCrawlMesos() {
+		for _, hostname := range m.c.agentList.AgentList {
+			go m.fetchMesosMetrics(hostname)
+		}
+	} else {
+		for _, hostname := range m.c.agentList.AgentList {
+			go m.fetchContainerMetrics(hostname)
+		}
 	}
+	return nil
+}
+
+func (m *metricCrawler) fetchMesosMetrics(hostname discovery.Slaves) error {
+	h := hostname.Hostname
+	containerMetricURL := fmt.Sprintf("http://%s:5051/containers", h)
+
+	logrus.Debugf("Started container metric scrapper for Agent URL: %s", containerMetricURL)
+
+	resp, err := m.c.client.Read(m.c.client.Get(containerMetricURL))
+	if err != nil {
+		logrus.Debugf("Could not pull container metrics: %s", err)
+		return err
+	}
+
+	if resp.Code == http.StatusNoContent {
+		logrus.Debugf("Found no content: %s)", resp)
+		// todo: Pull pod metrics
+	}
+
+	if resp.Code != http.StatusOK {
+		logrus.Debugf("Polling container metric returned %s", resp)
+		return err
+	}
+
+	var result interface{}
+	if err := json.Unmarshal(resp.Body, &result); err != nil {
+		logrus.Debugf("Could not unmarshal adminrouter dcos-metric api response: %s", err)
+		return err
+	}
+
+	e, err := json.MarshalIndent(result, "", "\t")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(e),",")
+
+
 	return nil
 }
 

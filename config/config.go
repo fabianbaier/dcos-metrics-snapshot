@@ -8,11 +8,13 @@ import (
 
 const (
 	defaultHTTPClientTimeout = 15 * time.Second
+	defaultCrawlMesos      = false
 	defaultFlagVerbose       = false
 
 )
 
 const (
+	envCrawlMesos = "DCOS_MESOS"
 	envHTTPClientTimeout = "DCOS_TIMEOUT"
 	envSecret            = "DCOS_SECRET"
 	envVerbose           = "DCOS_DEBUG"
@@ -30,6 +32,14 @@ func (c *Config) Secret() string {
 		return "empty"
 	}
 	return c.viper.GetString(envSecret)
+}
+
+func (c *Config) EnvCrawlMesos() bool {
+	envReturned := c.viper.GetString(envCrawlMesos)
+	if envReturned == "" {
+		return defaultCrawlMesos
+	}
+	return c.viper.GetBool(envCrawlMesos)
 }
 
 func (c *Config) EnvVerbose() bool {
@@ -52,6 +62,7 @@ func (c *Config) HTTPClientTimeout() time.Duration {
 
 func envs(viper *viper.Viper) {
 	viper.BindEnv(envHTTPClientTimeout)
+	viper.BindEnv(envCrawlMesos)
 	viper.BindEnv(envSecret)
 	viper.BindEnv(envVerbose)
 }

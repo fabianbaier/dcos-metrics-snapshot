@@ -36,6 +36,7 @@ func main() {
 
 	logrus.Infof("HTTP Client Timeout set to: %v", config.HTTPClientTimeout())
 	logrus.Infof("Secret set to: %v", config.Secret())
+	logrus.Infof("Crawl Mesos set to: %v", config.EnvCrawlMesos())
 	logrus.Infof("Verbose Mode set to: %v", config.EnvVerbose())
 
 	d := discovery.New(c)
