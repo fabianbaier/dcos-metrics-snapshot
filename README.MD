@@ -4,7 +4,7 @@ This is a quick hack to read DC/OS metrics into a Pandas dataframe.
 
 ## How to use
 
-1) Clone this Repo `git clone https://github.com/fabianbaier/dcos-metrics-snapshot.git` and change into its root directory `cd dcos-metrics-snapshot`1
+1) Clone this Repo `git clone https://github.com/fabianbaier/dcos-metrics-snapshot.git` and change into its root directory `cd dcos-metrics-snapshot`
 2) Have `DCOS CLI` installed and authenticated to your cluster
 3) Create an service account and secret `make sa`
 4) Run the crawler `dcos marathon app add crawler.marathon.json`
